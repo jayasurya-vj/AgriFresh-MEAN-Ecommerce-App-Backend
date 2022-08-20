@@ -1,20 +1,36 @@
-import {User} from "../model/user.js";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import Stripe from "stripe";
+import { Cart } from "../model/cart.js";
+import { User } from "../model/user.js";
+import { Order } from "../model/order.js";
+
+function lineItem(name, unit_amount, quantity) {
+  let price_data = {
+    currency: 'eur',
+    product_data: {
+      name: name,
+    },
+    unit_amount: unit_amount * 100
+  };
+  return { price_data, quantity }
+}
 
 const stripe = Stripe(process.env.STRIPE_KEY);
 
 
+const payWithStripe = (req, res, next) => {
+  try {
+    Cart.find({ creator: req.userData.userId }).populate('item')
 
-const payWithStripe = (req, res, next) => { 
-    try {
-        // Create a checkout session with Stripe
+      .then(cartItems => {
+
+        let lineItems = cartItems.map(cItem => {
+          return lineItem(cItem.item.name, cItem.item.price, cItem.quantity);
+        })
         const session = stripe.checkout.sessions.create({
-          customer_email: 'jayasurya.vj143@gmail.com',
+          customer_email: req.userData.email,
           payment_method_types: ['card', 'ideal'],
           shipping_address_collection: {
-            allowed_countries: ['NL', 'DE', 'FR' ],
+            allowed_countries: ['NL', 'DE', 'FR'],
           },
           shipping_options: [
             {
@@ -25,7 +41,6 @@ const payWithStripe = (req, res, next) => {
                   currency: 'eur',
                 },
                 display_name: 'Free shipping',
-                // Delivers between 2-3 business days
                 delivery_estimate: {
                   minimum: {
                     unit: 'day',
@@ -42,7 +57,7 @@ const payWithStripe = (req, res, next) => {
               shipping_rate_data: {
                 type: 'fixed_amount',
                 fixed_amount: {
-                  amount: 1500,
+                  amount: 1000,
                   currency: 'eur',
                 },
                 display_name: 'Express delivery',
@@ -59,129 +74,64 @@ const payWithStripe = (req, res, next) => {
               }
             },
           ],
-          // For each item use the id to get it's information
-          // Take that information and convert it to Stripe's format
-          line_items: [{
-            price_data: {
-              currency: 'eur',
-              product_data: {
-                name: 'T-shirt',
-              },
-              unit_amount: 2000,
-            },
-            quantity: 1,
-          },
-          {
-            price_data: {
-              currency: 'eur',
-              product_data: {
-                name: 'Shorts',
-              },
-              unit_amount: 4000,
-            },
-            quantity: 3,
-          }],
+
+          line_items: lineItems,
           mode: "payment",
-          // Set a success and cancel URL we will send customers to
-          // These must be full URLs
-          // In the next section we will setup CLIENT_URL
           success_url: `http://localhost:5000/api/payment/success?session_id={CHECKOUT_SESSION_ID}`,  //&order=${JSON.stringify(req.body.order)}
           cancel_url: `http://localhost:4200/cart`,
-        }).then( data=>{
-            console.log(data);
-            res.json({message:'Success',data:data, url: data.url });
-        }).catch(err=>{
-            res.status(500).json({message:'Payment Failed',error:err});
-          });
-      } catch (err) {
-        // If there is an error send it to the client
-        res.status(500).json({message:'Payment Failed',error:err})
-      }
-}
-
-const paymentSuccess = (req, res, next) => { 
-  let {session_id} = req.query;
-  stripe.checkout.sessions.retrieve(session_id)
-  .then(data=> {  console.log(data); res.redirect("http://localhost:4200/shop"); });  
-}
-// This is your Stripe CLI webhook secret for testing your endpoint locally.
-const endpointSecret = "whsec_32bd8377bb8196752a4b9d6ef16789cece1eabe394c0d4de492a7b0eda6491f0";
-
-const stripeWebhook = (req, res, next) => { 
-  const sig = req.headers['stripe-signature'];
-  let event;
-
-  try {
-    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
-    console.log(event);
+        }).then(data => {
+          res.json({ message: 'Success', data: data, url: data.url });
+        }).catch(err => {
+          res.status(500).json({ message: 'Payment Failed', error: err });
+        });
+      }).catch(err => {
+        res.status(500).json({ message: 'Payment Failed', error: err });
+      });;
   } catch (err) {
-    console.log(err);
-    res.status(400).send(`Webhook Error: ${err.message}`);
-    return;
+    res.status(500).json({ message: 'Payment Failed', error: err })
   }
-  console.log(event.data.object);
-  // Handle the event
-  switch (event.type) {
-    case 'payment_intent.succeeded':
-      {const paymentIntent = event.data.object;
-       
-      // Then define and call a function to handle the event payment_intent.succeeded
-      break;}
-    // ... handle other event types
-    default:
-      console.log(`Unhandled event type ${event.type}`);
-  }
+}
 
-  // Return a 200 response to acknowledge receipt of the event
-  res.send("hello");
+const paymentSuccess = (req, res, next) => {
+  let { session_id } = req.query;
+  stripe.checkout.sessions.retrieve(session_id)
+    .then(result => {
+      User.findOne({ email: result.customer_email })
+        .then(user => {
+          Cart.find({ creator: user._id })
+            .then(cartItems => {
+
+              let orderedItems = cartItems.map(cItem => {
+                return {item: cItem.item, quantity: cItem.quantity}
+              });
+              let shipping_details=result.shipping_details;
+  
+              const order=new Order({
+                orderedItems,
+                shipping_details,
+                amount_subtotal: result.amount_subtotal/100,
+                amount_total: result.amount_total/100,
+                amount_shipping: result.total_details ? result.total_details.amount_shipping : 0,
+                payment_status: result.payment_status || result.payment_status/100,
+                created_at: Date.now(),
+                creator: user._id
+              });
+              order.save().then(  data =>{
+                Cart.deleteMany({creator:user._id}).then(deleteResult=>{
+                  console.log(deleteResult);
+                  res.redirect("http://localhost:4200/orders?orderplaced=true");
+                });                
+              });
+            });
+        }).catch(err => {
+          res.status(500).json({ message: 'Payment Failed', error: err });
+        });
+    });
 }
 
 
-export const payController = {payWithStripe,paymentSuccess,stripeWebhook};
+export const payController = { payWithStripe, paymentSuccess };
 
-// AD,
-// AT,
-// BE,
-// BG,
-// HR,
-// CY,
-// CZ,
-// DK,
-// EE,
-// FO,
-// FI,
-// FR,
-// DE,
-// GI,
-// GR,
-// GL,
-// GG,
-// VA,
-// HU,
-// IS,
-// IE,
-// IM,
-// IL,
-// IT,
-// JE,
-// LV,
-// LI,
-// LT,
-// LU,
-// MT,
-// MC,
-// NL,
-// NO,
-// PL,
-// PT,
-// RO,
-// PM,
-// SM,
-// SK,
-// SI,
-// ES,
-// SE,
-// TR,
-// GB
+
 
 

@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const orderSchema = mongoose.Schema({
-    order:[{
+    orderedItems:[{
         item: {type:mongoose.Schema.Types.ObjectId, ref:"Product",required:true},
         quantity:{type:Number,required:true,default:1 }
     }],
@@ -16,8 +16,10 @@ const orderSchema = mongoose.Schema({
         },
         name: {type:String}
       },
-    shipping_amount:{type:Number,required:true,default:0},
-    payment_status:{type:Number,required:true},
+    amount_subtotal: {type:Number,required:true},
+    amount_total: {type:Number,required:true},
+    amount_shipping:{type:Number,required:true,default:0},
+    payment_status:{type:String,required:true},
     created_at: {type: Date, default: Date.now},
     creator: {type:mongoose.Schema.Types.ObjectId, ref:"User",required:true}
 })

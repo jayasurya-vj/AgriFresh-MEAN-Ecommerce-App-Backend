@@ -2,7 +2,6 @@ import express from "express";
 import bodyParser from "body-parser";
 import mongoose from "mongoose";
 
-import {postsRouter} from "./routes/posts.js";
 import {userRouter} from "./routes/user.js";
 import {paymentRouter} from "./routes/pay.js";
 import {cartRouter} from "./routes/cart.js";
@@ -32,7 +31,7 @@ app.get("/",(req,res)=>{
 });
 
 
-app.use("/api/posts",postsRouter);
+
 app.use("/api/user",userRouter);
 app.use("/api/product",productRouter);
 app.use("/api/cart",cartRouter);

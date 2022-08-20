@@ -12,14 +12,12 @@ const getProducts = (req, res, next) => {
 }
 
 const addProduct = (req, res, next) => {   
-  console.log(req.body);
   const product=new Product({
     name: req.body.name,
     displayQuantity: req.body.displayQuantity,
     price:req.body.price
   });
   product.save().then(result=>{
-    console.log(result,"result");
     res.status(201).json({
       message: "success",
       product:{

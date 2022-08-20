@@ -2,10 +2,8 @@ import {Cart}  from "../model/cart.js";
 import {Product} from "../model/product.js";
 
 const addCartItem=(req, res, next) => {
-    // console.log(req.body,req.userData.userId,req.userData);
     Cart.findOne({creator:req.userData.userId, item:req.body.itemId}).populate('item')
     .select('item').then(data => {
-      // console.log(data,"existingdata")
       if(data){
         req.method="PUT";
         req.body.itemId= data.item._id;
@@ -15,14 +13,12 @@ const addCartItem=(req, res, next) => {
         editCartItem(req, res, next);      
 
       }else{
-      //  console.log("add data")
         const cart=new Cart({
           item: req.body.itemId,
           quantity: 1,
           creator:req.userData.userId
         });
         cart.save().then(result=>{
-          console.log(result,"result");
           res.status(201).json({
             message: "success",  
             id:result._id 
@@ -49,8 +45,7 @@ const editCartItem = (req, res, next) => {
         creator:req.userData.userId
       });
       Cart.updateOne({_id:req.params.id,creator:req.userData.userId},cartItem).then(result=>{
-        // console.log(result);
-        if(result.modifiedCount>0 || result.matchedCount>0){
+       if(result.modifiedCount>0 || result.matchedCount>0){
           res.status(200).json({
             message: "success"
         }) 
@@ -67,11 +62,7 @@ const editCartItem = (req, res, next) => {
 
 const getCart =(req, res, next) => { 
     Cart.find({creator:req.userData.userId}).populate('item')
-    // .exec(function(err, team) {
-    //   console.log(team);
-    //  }); 
     .then(items=>{
-      // console.log(items);
       if(items){
         res.status(200).json({
           message: "success",
@@ -83,14 +74,13 @@ const getCart =(req, res, next) => {
         });
       }
     }).catch(err=>{
-      // console.log(err);
       res.status(500).json({message:'Fetching the cart items failed!',error:err});
     });
 }
 
 const deleteCart = (req, res, next) => {
     Cart.deleteMany({creator:req.userData.userId}).then(result=>{
-    // console.log(result);
+    console.log(result);
     if(result.deletedCount>0){
       res.status(200).json({
         message: "success"
@@ -106,9 +96,8 @@ const deleteCart = (req, res, next) => {
 };
 
 const deleteCartItem = (req, res, next) => {
-  console.log(req.params.id);
   Cart.deleteOne({_id:req.params.id,creator:req.userData.userId}).then(result=>{
-  // console.log(result); //delete count
+ console.log(result); 
   if(result.deletedCount>0){
     res.status(200).json({
       message: "success"
