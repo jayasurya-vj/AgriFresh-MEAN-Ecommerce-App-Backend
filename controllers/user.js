@@ -30,6 +30,7 @@ const loginUser = (req, res, next) => {
             res.end();
         }
         authUser=user;
+        console.log(user.name);
         return bcrypt.compare(req.body.password,user.password);
     }).then(result=>{
         if(!result){
