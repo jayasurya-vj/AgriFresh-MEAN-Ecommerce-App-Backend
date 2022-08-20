@@ -77,8 +77,8 @@ const payWithStripe = (req, res, next) => {
 
           line_items: lineItems,
           mode: "payment",
-          success_url: `http://localhost:5000/api/payment/success?session_id={CHECKOUT_SESSION_ID}`,  //&order=${JSON.stringify(req.body.order)}
-          cancel_url: `http://localhost:5000/cart`,
+          success_url: `https://agrifresh-mean-ecommerce-app.herokuapp.com/api/payment/success?session_id={CHECKOUT_SESSION_ID}`,  //&order=${JSON.stringify(req.body.order)}
+          cancel_url: `https://agrifresh-mean-ecommerce-app.herokuapp.com/cart`,
         }).then(data => {
           res.json({ message: 'Success', data: data, url: data.url });
         }).catch(err => {
@@ -119,7 +119,7 @@ const paymentSuccess = (req, res, next) => {
               order.save().then(  data =>{
                 Cart.deleteMany({creator:user._id}).then(deleteResult=>{
                   console.log(deleteResult);
-                  res.redirect("http://localhost:5000/orders?orderplaced=true");
+                  res.redirect("https://agrifresh-mean-ecommerce-app.herokuapp.com/orders?orderplaced=true");
                 });                
               });
             });
