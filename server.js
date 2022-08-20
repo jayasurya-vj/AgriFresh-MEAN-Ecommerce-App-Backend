@@ -16,7 +16,6 @@ mongoose.connect("mongodb+srv://jayasurya:"+ process.env.MONGO_PWD +"@cluster0.t
 .catch(()=>console.log("connection failed"));
 
 const __dirname = path.resolve();
-console.log(__dirname);
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:false}));
