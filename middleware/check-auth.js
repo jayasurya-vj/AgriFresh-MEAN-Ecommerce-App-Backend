@@ -7,7 +7,7 @@ export const checkAuth=(req,res,next)=>{
         req.userData={email:decodedToken.email, userId:decodedToken.userId};
         next();
     }catch(err){
-        res.status(401).json({message:"you are not Authenticated!!", error:err});
+        res.status(401).json({message:"you are not LoggedIn. Please Login!", error:err});
     }
 
 }
