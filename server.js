@@ -41,12 +41,12 @@ app.use("/api/product",productRouter);
 app.use("/api/cart",cartRouter);
 app.use("/api/order",orderRouter);
 app.use("/api/payment",paymentRouter);
-app.use(express.static(path.join(__dirname +"/angular")));
-app.get("*",(req,res,next)=>{
-  const indexFile = path.join(__dirname + '/angular/index.html');
-  res.sendFile(indexFile);
-//   res.sendFile(path.join(__dirname,"\angular","\index.html"));
-});
+// app.use(express.static(path.join(__dirname +"/angular")));
+// app.get("*",(req,res,next)=>{
+//   const indexFile = path.join(__dirname + '/angular/index.html');
+//   res.sendFile(indexFile);
+// //   res.sendFile(path.join(__dirname,"\angular","\index.html"));
+// });
 
 
 app.listen(process.env.PORT || 5000,()=>console.log("Server.started"));
