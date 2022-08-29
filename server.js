@@ -19,6 +19,7 @@ const __dirname = path.resolve();
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:false}));
+app.use("/",express.static(path.join(__dirname + '/angular')));
 
 
 app.use((req, res, next) => {
@@ -28,7 +29,7 @@ app.use((req, res, next) => {
   next();
 })
 
-app.use("/",express.static(path.join(__dirname + '/angular')));
+
 
 app.get("/test",(req,res)=>{
   res.send("test");
@@ -42,7 +43,7 @@ app.use("/api/cart",cartRouter);
 app.use("/api/order",orderRouter);
 app.use("/api/payment",paymentRouter);
 app.use("",(req,res,next)=>{
-  const indexFile = path.join(__dirname + '/angular/index.html');
+  const indexFile = path.resolve(__dirname + '/angular/index.html');
   res.sendFile(indexFile);
   // res.sendFile(path.join(__dirname,"\angular","\index.html"));
 });
