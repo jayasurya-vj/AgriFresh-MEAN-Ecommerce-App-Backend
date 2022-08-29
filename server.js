@@ -28,7 +28,7 @@ app.use((req, res, next) => {
   next();
 })
 
-app.use("/",express.static("angular"));
+// app.use("/",express.static("angular"));
 
 app.get("/test",(req,res)=>{
   res.send("test");
