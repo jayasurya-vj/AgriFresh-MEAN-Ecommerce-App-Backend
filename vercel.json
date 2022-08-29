@@ -1,13 +1,17 @@
 {
     "version": 2,
     "builds": [
-       { "src": "./server.js", "use": "@vercel/node" },
+       { "src": "/server.js", "use": "@vercel/node" },
        {
-           "src": "./angular/**",
+           "src": "/angular/*",
            "use": "@vercel/static"
        }
     ],
     "routes": [
-       { "src": "/(.*)", "dest": "./angular/index.html" }
+       { "src": "/(.*)", "dest": "/server.js" },
+       { "handle" : "filesystem"},
+       { "src" : "/asserts/(.*)","dest": "/angular/asserts/*"},
+       { "src" : "/(.*).(js|css|ico)","dest": "/angular/*"},
+       { "src" : "/(.*)","dest": "/angular/index.html"},
     ]
  }
