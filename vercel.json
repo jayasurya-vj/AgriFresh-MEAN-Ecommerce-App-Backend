@@ -1,12 +1,13 @@
 {
     "version": 2,
     "builds": [
-       { "src": "./server.js", "use": "@vercel/node" }
+       { "src": "./server.js", "use": "@vercel/node" },,
+       {
+           "src": "./angular/**",
+           "use": "@vercel/static"
+       }
     ],
     "routes": [
-       { "src": "/(.*)", "dest": "/" }
-    ],
-    {
-      "rewrites": [{ "source": "/(.*)", "destination": "/angular" }]
-    }
+       { "src": "/(.*)", "dest": "./angular/index.html" }
+    ]
  }
