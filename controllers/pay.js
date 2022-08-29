@@ -77,7 +77,7 @@ const payWithStripe = (req, res, next) => {
 
           line_items: lineItems,
           mode: "payment",
-          success_url: `https://agrifresh-ecommerce.vercel.app/api/payment/success?session_id={CHECKOUT_SESSION_ID}`,  //&order=${JSON.stringify(req.body.order)}
+          success_url: `https://agrifresh-backend.vercel.app/api/payment/success?session_id={CHECKOUT_SESSION_ID}`,  //&order=${JSON.stringify(req.body.order)}
           cancel_url: `https://agrifresh-ecommerce.vercel.app/cart`,
         }).then(data => {
           res.json({ message: 'Success', data: data, url: data.url });
