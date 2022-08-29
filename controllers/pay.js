@@ -77,8 +77,8 @@ const payWithStripe = (req, res, next) => {
 
           line_items: lineItems,
           mode: "payment",
-          success_url: `https://agrifresh-ecommerce.glitch.me/api/payment/success?session_id={CHECKOUT_SESSION_ID}`,  //&order=${JSON.stringify(req.body.order)}
-          cancel_url: `https://agrifresh-ecommerce.glitch.me/cart`,
+          success_url: `https://agrifresh-ecommerce.vercel.app/api/payment/success?session_id={CHECKOUT_SESSION_ID}`,  //&order=${JSON.stringify(req.body.order)}
+          cancel_url: `https://agrifresh-ecommerce.vercel.app/cart`,
         }).then(data => {
           res.json({ message: 'Success', data: data, url: data.url });
         }).catch(err => {
@@ -119,7 +119,7 @@ const paymentSuccess = (req, res, next) => {
               order.save().then(  data =>{
                 Cart.deleteMany({creator:user._id}).then(deleteResult=>{
                   console.log(deleteResult);
-                  res.redirect("https://agrifresh-ecommerce.glitch.me/orders?orderplaced=true");
+                  res.redirect("https://agrifresh-ecommerce.vercel.app/orders?orderplaced=true");
                 });                
               });
             });
