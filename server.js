@@ -42,7 +42,7 @@ app.use("/api/cart",cartRouter);
 app.use("/api/order",orderRouter);
 app.use("/api/payment",paymentRouter);
 app.use("",(req,res,next)=>{
-  const indexFile = path.resolve(__dirname + '/angular/index.html');
+  const indexFile = path.join(__dirname + '/angular/index.html');
   res.sendFile(indexFile);
   // res.sendFile(path.join(__dirname,"\angular","\index.html"));
 });
