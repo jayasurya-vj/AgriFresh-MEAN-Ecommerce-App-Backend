@@ -28,7 +28,7 @@ app.use((req, res, next) => {
   next();
 })
 
-// app.use("/",express.static("angular"));
+app.use("/",express.static(path.join(__dirname + '/angular')));
 
 app.get("/test",(req,res)=>{
   res.send("test");
@@ -48,7 +48,7 @@ app.use("",(req,res,next)=>{
 });
 
 
-app.listen(process.env.PORT || 5000);
+app.listen(process.env.PORT || 5000,()=>console.log("Server.started"));
 
 
 
